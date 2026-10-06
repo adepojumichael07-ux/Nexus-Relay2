@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071018" />
+  <title>MeshAlert — Offline Emergency Communication</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>MeshAlert</h1>
+        <p class="sub">Cloud-connected emergency reporting for blackout areas. Works offline first, then forwards by mesh bundle or cloud when a path exists.</p>
+      </div>
+      <div id="net" class="badge offline">Checking link</div>
+    </header>
+
+    <form id="form" class="grid">
+      <section class="card">
+        <label for="incident">Incident type</label>
+        <select id="incident" name="incident">
+          <option value="medical">Medical emergency</option>
+          <option value="fire">Fire</option>
+          <option value="accident">Road accident</option>
+          <option value="flood">Flood / disaster</option>
+          <option value="security">Security / crime</option>
+          <option value="collapse">Building collapse</option>
+          <option value="missing">Missing person</option>
+          <option value="other">Other incident</option>
+        </select>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label for="number">Emergency number</label>
+            <input id="number" name="number" inputmode="tel" required />
+          </div>
+          <div>
+            <label>Suggested agency</label>
+            <div class="loc"><strong id="agency">112</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <label>Location (automatic)</label>
+        <div class="loc">
+          <div>
+            <strong id="locText">Waiting for GPS</strong>
+            <span id="locMeta">Location is captured from this device. It is not typed in.</span>
+          </div>
+          <button type="button" id="refreshLoc" class="ghost">Refresh</button>
+        </div>
+        <a id="mapLink" class="maplink" target="_blank" rel="noopener" hidden>Open map</a>
+      </section>
+
+      <section class="card">
+        <label for="details">What is happening</label>
+        <textarea id="details" name="details" placeholder="People injured, access notes, landmarks"></textarea>
+        <div class="actions">
+          <button class="primary" type="submit">Send alert</button>
+          <a class="ghost" id="callLink" href="tel:112" style="display:grid;place-items:center;text-decoration:none;border:1px solid var(--line);border-radius:12px">Call number</a>
+        </div>
+      </section>
+    </form>
+
+    <section class="card" style="margin-top:12px">
+      <label>Mesh / cloud status</label>
+      <div class="pills">
+        <span class="pill live" id="peers">1 local node</span>
+        <span class="pill" id="hops">0 queued</span>
+        <span class="pill" id="cloud">Cloud unreachable</span>
+      </div>
+      <p class="note">During a blackout the alert is stored on this phone. Pass the mesh bundle to a nearby phone by message, QR, or Bluetooth share. When any phone regains data, queued alerts sync to the cloud endpoint.</p>
+      <div class="actions">
+        <button type="button" id="exportBtn" class="ghost">Export mesh bundle</button>
+        <button type="button" id="importBtn" class="ghost">Import nearby bundle</button>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <label>Alert queue</label>
+      <ul id="feed" class="feed"></ul>
+    </section>
+  </main>
+
+  <dialog id="bundleDialog">
+    <form method="dialog">
+      <label for="bundle">Mesh bundle</label>
+      <textarea id="bundle" class="bundle" placeholder="Paste a bundle from a nearby phone"></textarea>
+      <div class="actions">
+        <button type="button" id="applyBundle" class="primary">Apply bundle</button>
+        <button type="button" id="closeDialog" class="ghost">Close</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="./app.js"></script>
+  <script>
+    const number = document.querySelector("#number");
+    const callLink = document.querySelector("#callLink");
+    const syncCall = () => { callLink.href = "tel:" + number.value.replace(/\s/g, ""); };
+    number.addEventListener("input", syncCall);
+    document.querySelector("#incident").addEventListener("change", () => setTimeout(syncCall, 0));
+    syncCall();
+  </script>
+</body>
+</html>
